@@ -65,10 +65,12 @@ CFLAGS += -O3
 endif
 
 ifeq ($(UNICORN_ASAN),yes)
-CC = clang -fsanitize=address -fno-omit-frame-pointer
-CXX = clang++ -fsanitize=address -fno-omit-frame-pointer
+CC = clang 
+UNICORN_CFLAGS += -fsanitize=address 
+UNICORN_CFLAGS += -fno-omit-frame-pointer
+CXX = clang++ 
 AR = llvm-ar
-LDFLAGS := -fsanitize=address ${LDFLAGS}
+# $(LIBNAME)_LDFLAGS := -lasan
 endif
 
 ifeq ($(CROSS),)
@@ -141,7 +143,7 @@ else ifeq ($(IS_CYGWIN),1)
 LIBRARY = $(BLDIR)/cyg$(LIBNAME).$(EXT)
 LIBRARY_DLLA = $(BLDIR)/lib$(LIBNAME).$(EXT).$(AR_EXT)
 $(LIBNAME)_LDFLAGS += -Wl,--out-implib=$(LIBRARY_DLLA)
-$(LIBNAME)_LDFLAGS += -lssp
+$(LIBNAME)_LDFLAGS += fssp
 else	# *nix
 LIBRARY = $(BLDIR)/lib$(LIBNAME).$(VERSION_EXT)
 LIBRARY_SYMLINK = $(BLDIR)/lib$(LIBNAME).$(EXT)
@@ -238,9 +240,9 @@ $(LIBRARY): $(UC_TARGET_OBJ) uc.o list.o
 ifeq ($(UNICORN_SHARED),yes)
 ifeq ($(V),0)
 	$(call log,GEN,$(LIBRARY))
-	@$(CC) $(CFLAGS) -shared $^ -o $(LIBRARY) $(GLIB) -lm $($(LIBNAME)_LDFLAGS)
+	@$(CC) -v $(CFLAGS) -shared $^ -o $(LIBRARY) $(GLIB) -lm $($(LIBNAME)_LDFLAGS)
 else
-	$(CC) $(CFLAGS) -shared $^ -o $(LIBRARY) $(GLIB) -lm $($(LIBNAME)_LDFLAGS)
+	$(CC) -v $(CFLAGS) -shared $^ -o $(LIBRARY) $(GLIB) -lm $($(LIBNAME)_LDFLAGS)
 endif
 ifneq (,$(LIBRARY_SYMLINK))
 	@ln -sf $(LIBRARY) $(LIBRARY_SYMLINK)
